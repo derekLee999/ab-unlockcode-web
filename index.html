@@ -69,7 +69,14 @@
   }
   button:active { opacity: .85; }
   .result-label { font-size: 13px; color: #888; margin: 16px 0 6px; }
-  .code { font-size: 30px; color: #ff6b00; letter-spacing: 2px; }
+  .code-row { display: flex; align-items: center; gap: 10px; }
+  .code { font-size: 30px; color: #ff6b00; letter-spacing: 2px; cursor: pointer; }
+  .copy-btn { width: auto; background: none; padding: 6px; border-radius: 6px; display: flex; align-items: center; }
+  .copy-btn:hover { background: #2a2a2a; }
+  .copy-btn svg { width: 20px; height: 20px; stroke: #888; }
+  .copy-btn:hover svg { stroke: #fff; }
+  .copied-tip { font-size: 12px; color: #4caf50; opacity: 0; transition: opacity .2s; }
+  .copied-tip.show { opacity: 1; }
   .error { font-size: 13px; color: #ff4444; margin-top: 10px; }
   .hidden { display: none; }
 </style>
@@ -104,7 +111,13 @@
 
   <div id="result" class="hidden">
     <p class="result-label">解锁码</p>
-    <p class="code" id="code"></p>
+    <div class="code-row">
+      <p class="code" id="code" title="点击复制"></p>
+      <button class="copy-btn" id="copy" title="复制解锁码" aria-label="复制解锁码">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      </button>
+      <span class="copied-tip" id="copiedTip">已复制</span>
+    </div>
   </div>
   <p id="error" class="error hidden"></p>
 </div>
@@ -187,14 +200,46 @@ if (typeof document !== 'undefined') {
   var resultEl = document.getElementById('result');
   var codeEl = document.getElementById('code');
   var errorEl = document.getElementById('error');
+  var copyEl = document.getElementById('copy');
+  var copiedTipEl = document.getElementById('copiedTip');
+  var copiedTimer = null;
 
   function clearOutput() {
     resultEl.classList.add('hidden');
     errorEl.classList.add('hidden');
+    copiedTipEl.classList.remove('show');
   }
   macEl.addEventListener('input', clearOutput);
   snEl.addEventListener('input', clearOutput);
   algoEl.addEventListener('change', clearOutput);
+
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+  function copyCode() {
+    var text = codeEl.textContent;
+    if (!text) return;
+    function done() {
+      copiedTipEl.classList.add('show');
+      if (copiedTimer) clearTimeout(copiedTimer);
+      copiedTimer = setTimeout(function () { copiedTipEl.classList.remove('show'); }, 1500);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); });
+    } else {
+      fallbackCopy(text);
+      done();
+    }
+  }
+  codeEl.addEventListener('click', copyCode);
+  copyEl.addEventListener('click', copyCode);
 
   document.getElementById('calc').addEventListener('click', function () {
     var mac = macEl.value.trim();
