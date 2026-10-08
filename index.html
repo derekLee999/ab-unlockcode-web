@@ -1,261 +1,459 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="color-scheme" content="dark">
-<title>小米手环/手表密钥计算器</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #000;
-    font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 24px 16px;
-  }
-  .card {
-    width: 100%;
-    max-width: 420px;
-    background: #181818;
-    border: 1px solid #2a2a2a;
-    border-radius: 12px;
-    padding: 16px;
-  }
-  h1 { font-size: 20px; color: #fff; font-weight: 600; margin-bottom: 4px; }
-  .subtitle { font-size: 12px; color: #888; margin-bottom: 18px; }
-  .field { margin-bottom: 12px; }
-  .field label { display: block; font-size: 13px; color: #888; margin-bottom: 3px; }
-  .field input {
-    width: 100%;
-    background: #1e1e1e;
-    border: 1px solid #333;
-    border-radius: 6px;
-    color: #fff;
-    font-size: 14px;
-    padding: 5px 10px;
-    height: 36px;
-    outline: none;
-  }
-  .field input::placeholder { color: #666; }
-  .field input:focus { border-color: #ff6b00; }
-  .algo-row { display: flex; align-items: center; margin-bottom: 12px; }
-  .algo-text { margin-left: 10px; }
-  .algo-text p { font-size: 14px; color: #fff; }
-  .algo-text span { font-size: 11px; color: #888; }
-  .switch { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
-  .switch input { opacity: 0; width: 0; height: 0; }
-  .slider {
-    position: absolute; inset: 0; cursor: pointer;
-    background: #333; border-radius: 26px; transition: background .2s;
-  }
-  .slider::before {
-    content: ""; position: absolute; width: 20px; height: 20px;
-    left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .2s;
-  }
-  .switch input:checked + .slider { background: #ff6b00; }
-  .switch input:checked + .slider::before { transform: translateX(18px); }
-  button {
-    width: 100%;
-    background: #1877FF;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    padding: 10px;
-    cursor: pointer;
-  }
-  button:active { opacity: .85; }
-  .result-label { font-size: 13px; color: #888; margin: 16px 0 6px; }
-  .code-row { display: flex; align-items: center; gap: 10px; }
-  .code { font-size: 30px; color: #ff6b00; letter-spacing: 2px; cursor: pointer; }
-  .copy-btn { width: auto; background: none; padding: 6px; border-radius: 6px; display: flex; align-items: center; }
-  .copy-btn:hover { background: #2a2a2a; }
-  .copy-btn svg { width: 20px; height: 20px; stroke: #888; }
-  .copy-btn:hover svg { stroke: #fff; }
-  .copied-tip { font-size: 12px; color: #4caf50; opacity: 0; transition: opacity .2s; }
-  .copied-tip.show { opacity: 1; }
-  .error { font-size: 13px; color: #ff4444; margin-top: 10px; }
-  .hidden { display: none; }
-</style>
-</head>
-<body>
-<div class="card">
-  <h1>小米手环/手表密钥计算器</h1>
-  <p class="subtitle">输入 MAC 与 SN 计算小米设备解锁码</p>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>小米手环/手表密钥计算器</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: #000;
+        font-family:
+          -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+          sans-serif;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 24px 16px;
+      }
+      .card {
+        width: 100%;
+        max-width: 420px;
+        background: #181818;
+        border: 1px solid #2a2a2a;
+        border-radius: 12px;
+        padding: 16px;
+      }
+      h1 {
+        font-size: 20px;
+        color: #fff;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .subtitle {
+        font-size: 12px;
+        color: #888;
+        margin-bottom: 18px;
+      }
+      .field {
+        margin-bottom: 12px;
+      }
+      .field label {
+        display: block;
+        font-size: 13px;
+        color: #888;
+        margin-bottom: 3px;
+      }
+      .field input {
+        width: 100%;
+        background: #1e1e1e;
+        border: 1px solid #333;
+        border-radius: 6px;
+        color: #fff;
+        font-size: 14px;
+        padding: 5px 10px;
+        height: 36px;
+        outline: none;
+      }
+      .field input::placeholder {
+        color: #666;
+      }
+      .field input:focus {
+        border-color: #ff6b00;
+      }
+      .algo-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .algo-text {
+        margin-left: 10px;
+      }
+      .algo-text p {
+        font-size: 14px;
+        color: #fff;
+      }
+      .algo-text span {
+        font-size: 11px;
+        color: #888;
+      }
+      .switch {
+        position: relative;
+        width: 44px;
+        height: 26px;
+        flex-shrink: 0;
+      }
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        inset: 0;
+        cursor: pointer;
+        background: #333;
+        border-radius: 26px;
+        transition: background 0.2s;
+      }
+      .slider::before {
+        content: "";
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        left: 3px;
+        top: 3px;
+        background: #fff;
+        border-radius: 50%;
+        transition: transform 0.2s;
+      }
+      .switch input:checked + .slider {
+        background: #ff6b00;
+      }
+      .switch input:checked + .slider::before {
+        transform: translateX(18px);
+      }
+      button {
+        width: 100%;
+        background: #1877ff;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        padding: 10px;
+        cursor: pointer;
+      }
+      button:active {
+        opacity: 0.85;
+      }
+      .result-label {
+        font-size: 13px;
+        color: #888;
+        margin: 16px 0 6px;
+      }
+      .code-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .code {
+        font-size: 30px;
+        color: #ff6b00;
+        letter-spacing: 2px;
+        cursor: pointer;
+      }
+      .copy-btn {
+        width: auto;
+        background: none;
+        padding: 6px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+      }
+      .copy-btn:hover {
+        background: #2a2a2a;
+      }
+      .copy-btn svg {
+        width: 20px;
+        height: 20px;
+        stroke: #888;
+      }
+      .copy-btn:hover svg {
+        stroke: #fff;
+      }
+      .copied-tip {
+        font-size: 12px;
+        color: #4caf50;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      .copied-tip.show {
+        opacity: 1;
+      }
+      .error {
+        font-size: 13px;
+        color: #ff4444;
+        margin-top: 10px;
+      }
+      .hidden {
+        display: none;
+      }
+      .page {
+        width: 100%;
+        max-width: 420px;
+      }
+      .footer {
+        text-align: center;
+        font-size: 12px;
+        color: #666;
+        margin-top: 12px;
+        line-height: 1.8;
+      }
+      .footer a {
+        color: #1877ff;
+        text-decoration: none;
+      }
+      .footer a:hover {
+        text-decoration: underline;
+      }
+      .footer.warning {
+        color: #FF4D4F;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="card">
+        <h1>小米手环/手表密钥计算器</h1>
+        <p class="subtitle">输入 MAC 与 SN 计算小米设备解锁码</p>
 
-  <div class="field">
-    <label for="mac">MAC地址/蓝牙地址</label>
-    <input id="mac" type="text" placeholder="例如 00:11:22:33:44:55" autocomplete="off">
-  </div>
+        <div class="field">
+          <label for="mac">MAC地址/蓝牙地址</label>
+          <input
+            id="mac"
+            type="text"
+            placeholder="例如 00:11:22:33:44:55"
+            autocomplete="off"
+          />
+        </div>
 
-  <div class="field">
-    <label for="sn">序列号 (SN)</label>
-    <input id="sn" type="text" placeholder="例如 SN123456789" autocomplete="off">
-  </div>
+        <div class="field">
+          <label for="sn">序列号 (SN)</label>
+          <input
+            id="sn"
+            type="text"
+            placeholder="例如 SN123456789"
+            autocomplete="off"
+          />
+        </div>
 
-  <div class="algo-row">
-    <label class="switch">
-      <input id="algo" type="checkbox">
-      <span class="slider"></span>
-    </label>
-    <div class="algo-text">
-      <p>新版算法</p>
-      <span>适用于 S5 / 10P 及以后设备</span>
+        <div class="algo-row">
+          <label class="switch">
+            <input id="algo" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+          <div class="algo-text">
+            <p>新版算法</p>
+            <span>适用于 S5 / 10P 及以后设备</span>
+          </div>
+        </div>
+
+        <button id="calc">计算解锁码</button>
+
+        <div id="result" class="hidden">
+          <p class="result-label">解锁码</p>
+          <div class="code-row">
+            <p class="code" id="code" title="点击复制"></p>
+            <button
+              class="copy-btn"
+              id="copy"
+              title="复制解锁码"
+              aria-label="复制解锁码"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="9" y="9" width="12" height="12" rx="2" />
+                <path
+                  d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                />
+              </svg>
+            </button>
+            <span class="copied-tip" id="copiedTip">已复制</span>
+          </div>
+        </div>
+        <p id="error" class="error hidden"></p>
+      </div>
+      <div class="footer">
+        开源免费，请勿上当受骗！项目地址：<a
+          href="https://github.com/derekLee999/ab-unlockcode-web"
+          target="_blank"
+          >GitHub</a
+        >
+      </div>
+      <div class="footer warning">仅在无法使手机等设备正常解锁和特殊情况下使用</div>
     </div>
-  </div>
 
-  <button id="calc">计算解锁码</button>
+    <script>
+      "use strict";
 
-  <div id="result" class="hidden">
-    <p class="result-label">解锁码</p>
-    <div class="code-row">
-      <p class="code" id="code" title="点击复制"></p>
-      <button class="copy-btn" id="copy" title="复制解锁码" aria-label="复制解锁码">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-      </button>
-      <span class="copied-tip" id="copiedTip">已复制</span>
-    </div>
-  </div>
-  <p id="error" class="error hidden"></p>
-</div>
+      // 同步 SHA-256（输入输出均为 Uint8Array），单文件离线可用，不依赖 WebCrypto。
+      function sha256Bytes(data) {
+        var K = [
+          0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b,
+          0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01,
+          0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7,
+          0xc19bf174, 0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,
+          0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152,
+          0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147,
+          0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc,
+          0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+          0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819,
+          0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08,
+          0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f,
+          0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
+          0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+        ];
+        var H = [
+          0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f,
+          0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
+        ];
+        var l = data.length;
+        var paddedLen = (((l + 8) >> 6) + 1) * 64;
+        var padded = new Uint8Array(paddedLen);
+        padded.set(data);
+        padded[l] = 0x80;
+        var dv = new DataView(padded.buffer);
+        dv.setUint32(paddedLen - 4, (l * 8) >>> 0);
+        var w = new Uint32Array(64);
+        function rotr(x, n) {
+          return (x >>> n) | (x << (32 - n));
+        }
+        for (var off = 0; off < paddedLen; off += 64) {
+          for (var i = 0; i < 16; i++) w[i] = dv.getUint32(off + i * 4);
+          for (i = 16; i < 64; i++) {
+            var s0 =
+              rotr(w[i - 15], 7) ^ rotr(w[i - 15], 18) ^ (w[i - 15] >>> 3);
+            var s1 =
+              rotr(w[i - 2], 17) ^ rotr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+            w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
+          }
+          var a = H[0],
+            b = H[1],
+            c = H[2],
+            d = H[3],
+            e = H[4],
+            f = H[5],
+            g = H[6],
+            h = H[7];
+          for (i = 0; i < 64; i++) {
+            var S1 = rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25);
+            var ch = (e & f) ^ (~e & g);
+            var t1 = (h + S1 + ch + K[i] + w[i]) | 0;
+            var S0 = rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22);
+            var maj = (a & b) ^ (a & c) ^ (b & c);
+            var t2 = (S0 + maj) | 0;
+            h = g;
+            g = f;
+            f = e;
+            e = (d + t1) | 0;
+            d = c;
+            c = b;
+            b = a;
+            a = (t1 + t2) | 0;
+          }
+          H[0] = (H[0] + a) | 0;
+          H[1] = (H[1] + b) | 0;
+          H[2] = (H[2] + c) | 0;
+          H[3] = (H[3] + d) | 0;
+          H[4] = (H[4] + e) | 0;
+          H[5] = (H[5] + f) | 0;
+          H[6] = (H[6] + g) | 0;
+          H[7] = (H[7] + h) | 0;
+        }
+        var out = new Uint8Array(32);
+        var outDv = new DataView(out.buffer);
+        for (i = 0; i < 8; i++) outDv.setUint32(i * 4, H[i]);
+        return out;
+      }
 
-<script>
-'use strict';
+      // 与 src/calc.rs 相同的归一化与拼接规则
+      function normalizeMac(mac) {
+        return mac.toUpperCase().replace(/[：:\- .]/g, "");
+      }
+      function normalizeSn(sn) {
+        return sn.toUpperCase().trim();
+      }
+      function calcUnlockCode(mac, sn, newAlgorithm) {
+        mac = normalizeMac(mac);
+        sn = normalizeSn(sn);
+        var msg = newAlgorithm ? sn + mac + "XIAOMI" : mac + sn + "XIAOMI";
+        var hash = sha256Bytes(new TextEncoder().encode(msg));
+        var code = "";
+        for (var i = 0; i < 10; i++) code += String(hash[i] % 10);
+        return code;
+      }
 
-// 同步 SHA-256（输入输出均为 Uint8Array），单文件离线可用，不依赖 WebCrypto。
-function sha256Bytes(data) {
-  var K = [
-    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
-  ];
-  var H = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
-  var l = data.length;
-  var paddedLen = (((l + 8) >> 6) + 1) * 64;
-  var padded = new Uint8Array(paddedLen);
-  padded.set(data);
-  padded[l] = 0x80;
-  var dv = new DataView(padded.buffer);
-  dv.setUint32(paddedLen - 4, (l * 8) >>> 0);
-  var w = new Uint32Array(64);
-  function rotr(x, n) { return (x >>> n) | (x << (32 - n)); }
-  for (var off = 0; off < paddedLen; off += 64) {
-    for (var i = 0; i < 16; i++) w[i] = dv.getUint32(off + i * 4);
-    for (i = 16; i < 64; i++) {
-      var s0 = rotr(w[i - 15], 7) ^ rotr(w[i - 15], 18) ^ (w[i - 15] >>> 3);
-      var s1 = rotr(w[i - 2], 17) ^ rotr(w[i - 2], 19) ^ (w[i - 2] >>> 10);
-      w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
-    }
-    var a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
-    for (i = 0; i < 64; i++) {
-      var S1 = rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25);
-      var ch = (e & f) ^ (~e & g);
-      var t1 = (h + S1 + ch + K[i] + w[i]) | 0;
-      var S0 = rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22);
-      var maj = (a & b) ^ (a & c) ^ (b & c);
-      var t2 = (S0 + maj) | 0;
-      h = g; g = f; f = e; e = (d + t1) | 0;
-      d = c; c = b; b = a; a = (t1 + t2) | 0;
-    }
-    H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0;
-    H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
-    H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0;
-    H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
-  }
-  var out = new Uint8Array(32);
-  var outDv = new DataView(out.buffer);
-  for (i = 0; i < 8; i++) outDv.setUint32(i * 4, H[i]);
-  return out;
-}
+      if (typeof document !== "undefined") {
+        var macEl = document.getElementById("mac");
+        var snEl = document.getElementById("sn");
+        var algoEl = document.getElementById("algo");
+        var resultEl = document.getElementById("result");
+        var codeEl = document.getElementById("code");
+        var errorEl = document.getElementById("error");
+        var copyEl = document.getElementById("copy");
+        var copiedTipEl = document.getElementById("copiedTip");
+        var copiedTimer = null;
 
-// 与 src/calc.rs 相同的归一化与拼接规则
-function normalizeMac(mac) {
-  return mac.toUpperCase().replace(/[：:\- .]/g, '');
-}
-function normalizeSn(sn) {
-  return sn.toUpperCase().trim();
-}
-function calcUnlockCode(mac, sn, newAlgorithm) {
-  mac = normalizeMac(mac);
-  sn = normalizeSn(sn);
-  var msg = newAlgorithm ? (sn + mac + 'XIAOMI') : (mac + sn + 'XIAOMI');
-  var hash = sha256Bytes(new TextEncoder().encode(msg));
-  var code = '';
-  for (var i = 0; i < 10; i++) code += String(hash[i] % 10);
-  return code;
-}
+        function clearOutput() {
+          resultEl.classList.add("hidden");
+          errorEl.classList.add("hidden");
+          copiedTipEl.classList.remove("show");
+        }
+        macEl.addEventListener("input", clearOutput);
+        snEl.addEventListener("input", clearOutput);
+        algoEl.addEventListener("change", clearOutput);
 
-if (typeof document !== 'undefined') {
-  var macEl = document.getElementById('mac');
-  var snEl = document.getElementById('sn');
-  var algoEl = document.getElementById('algo');
-  var resultEl = document.getElementById('result');
-  var codeEl = document.getElementById('code');
-  var errorEl = document.getElementById('error');
-  var copyEl = document.getElementById('copy');
-  var copiedTipEl = document.getElementById('copiedTip');
-  var copiedTimer = null;
+        function fallbackCopy(text) {
+          var ta = document.createElement("textarea");
+          ta.value = text;
+          ta.style.position = "fixed";
+          ta.style.opacity = "0";
+          document.body.appendChild(ta);
+          ta.select();
+          try {
+            document.execCommand("copy");
+          } catch (e) {}
+          document.body.removeChild(ta);
+        }
+        function copyCode() {
+          var text = codeEl.textContent;
+          if (!text) return;
+          function done() {
+            copiedTipEl.classList.add("show");
+            if (copiedTimer) clearTimeout(copiedTimer);
+            copiedTimer = setTimeout(function () {
+              copiedTipEl.classList.remove("show");
+            }, 1500);
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, function () {
+              fallbackCopy(text);
+              done();
+            });
+          } else {
+            fallbackCopy(text);
+            done();
+          }
+        }
+        codeEl.addEventListener("click", copyCode);
+        copyEl.addEventListener("click", copyCode);
 
-  function clearOutput() {
-    resultEl.classList.add('hidden');
-    errorEl.classList.add('hidden');
-    copiedTipEl.classList.remove('show');
-  }
-  macEl.addEventListener('input', clearOutput);
-  snEl.addEventListener('input', clearOutput);
-  algoEl.addEventListener('change', clearOutput);
-
-  function fallbackCopy(text) {
-    var ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    try { document.execCommand('copy'); } catch (e) {}
-    document.body.removeChild(ta);
-  }
-  function copyCode() {
-    var text = codeEl.textContent;
-    if (!text) return;
-    function done() {
-      copiedTipEl.classList.add('show');
-      if (copiedTimer) clearTimeout(copiedTimer);
-      copiedTimer = setTimeout(function () { copiedTipEl.classList.remove('show'); }, 1500);
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); });
-    } else {
-      fallbackCopy(text);
-      done();
-    }
-  }
-  codeEl.addEventListener('click', copyCode);
-  copyEl.addEventListener('click', copyCode);
-
-  document.getElementById('calc').addEventListener('click', function () {
-    var mac = macEl.value.trim();
-    var sn = snEl.value.trim();
-    if (!mac || !sn) {
-      codeEl.textContent = '';
-      resultEl.classList.add('hidden');
-      errorEl.textContent = 'MAC 和 SN 都不能为空';
-      errorEl.classList.remove('hidden');
-      return;
-    }
-    codeEl.textContent = calcUnlockCode(mac, sn, algoEl.checked);
-    errorEl.classList.add('hidden');
-    resultEl.classList.remove('hidden');
-  });
-}
-</script>
-</body>
+        document.getElementById("calc").addEventListener("click", function () {
+          var mac = macEl.value.trim();
+          var sn = snEl.value.trim();
+          if (!mac || !sn) {
+            codeEl.textContent = "";
+            resultEl.classList.add("hidden");
+            errorEl.textContent = "MAC 和 SN 都不能为空";
+            errorEl.classList.remove("hidden");
+            return;
+          }
+          codeEl.textContent = calcUnlockCode(mac, sn, algoEl.checked);
+          errorEl.classList.add("hidden");
+          resultEl.classList.remove("hidden");
+        });
+      }
+    </script>
+  </body>
 </html>
